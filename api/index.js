@@ -1,4 +1,4 @@
-// Vercel serverless entry → NestJS app (built to apps/api/dist)
+// Single Vercel function for all /api/* Nest routes
 let appPromise;
 
 async function getApp() {
@@ -13,7 +13,6 @@ async function getApp() {
 
 module.exports = async function handler(req, res) {
   try {
-    // Vercel sometimes leaves body as string; Nest ValidationPipe needs an object.
     if (typeof req.body === 'string') {
       try {
         req.body = JSON.parse(req.body || '{}');

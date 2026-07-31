@@ -4,12 +4,13 @@
   "outputDirectory": "apps/web/dist",
   "framework": null,
   "functions": {
-    "api/[...all].js": {
+    "api/index.js": {
       "maxDuration": 30,
       "includeFiles": "{apps/api/dist/**,node_modules/.prisma/**,node_modules/@prisma/client/**}"
     }
   },
   "rewrites": [
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/((?!api$).*)", "destination": "/index.html" }
   ]
 }
