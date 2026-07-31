@@ -14,5 +14,8 @@
     "db:up": "docker compose up -d",
     "db:migrate": "npm run prisma:migrate --workspace=@blizhe/api",
     "db:seed": "npm run prisma:seed --workspace=@blizhe/api"
+  },
+  "overrides": {
+    "express": "4.21.2"
   }
 }
