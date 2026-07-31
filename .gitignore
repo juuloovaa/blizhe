@@ -8,3 +8,5 @@ coverage
 .vite
 apps/api/prisma/*.db
 apps/web/dist
+.tools
+.tools

@@ -1,10 +1,9 @@
 import { Body, Controller, Delete, Get, Patch, Post, UseGuards } from '@nestjs/common';
 import { IsBoolean, IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
-import { UserMode } from '@prisma/client';
 import { AuthGuard } from '../auth/auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { UsersService } from './users.service';
-import { User } from '@prisma/client';
+import { AuthUser, UserMode } from '../types/models';
 
 class OnboardingDto {
   @IsEnum(UserMode)
@@ -51,27 +50,27 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  me(@CurrentUser() user: User) {
+  me(@CurrentUser() user: AuthUser) {
     return this.usersService.getMe(user.id);
   }
 
   @Post('onboarding')
-  onboarding(@CurrentUser() user: User, @Body() dto: OnboardingDto) {
+  onboarding(@CurrentUser() user: AuthUser, @Body() dto: OnboardingDto) {
     return this.usersService.completeOnboarding(user.id, dto);
   }
 
   @Patch()
-  update(@CurrentUser() user: User, @Body() dto: UpdateProfileDto) {
+  update(@CurrentUser() user: AuthUser, @Body() dto: UpdateProfileDto) {
     return this.usersService.updateProfile(user.id, dto);
   }
 
   @Patch('notifications')
-  notifications(@CurrentUser() user: User, @Body() dto: NotificationSettingsDto) {
+  notifications(@CurrentUser() user: AuthUser, @Body() dto: NotificationSettingsDto) {
     return this.usersService.updateNotificationSettings(user.id, dto);
   }
 
   @Delete()
-  delete(@CurrentUser() user: User) {
+  delete(@CurrentUser() user: AuthUser) {
     return this.usersService.deleteAccount(user.id);
   }
 }

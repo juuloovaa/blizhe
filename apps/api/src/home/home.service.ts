@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { DailyQuestionType, MoodType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CouplesService } from '../couples/couples.service';
 import { BotService } from '../bot/bot.service';
+import { DailyQuestionType, MoodType } from '../types/models';
 
 @Injectable()
 export class HomeService {

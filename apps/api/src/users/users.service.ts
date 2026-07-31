@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { User, UserMode } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { TelegramWebAppUser } from '../auth/telegram-auth.service';
+import { AuthUser, UserMode } from '../types/models';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async upsertFromTelegram(tg: TelegramWebAppUser): Promise<User> {
+  async upsertFromTelegram(tg: TelegramWebAppUser): Promise<AuthUser> {
     const telegramId = BigInt(tg.id);
     const displayName =
       [tg.first_name, tg.last_name].filter(Boolean).join(' ') || tg.username || 'Пользователь';
@@ -70,7 +70,10 @@ export class UsersService {
 
     const membership = user.memberships[0] ?? null;
     const partner =
-      membership?.couple.members.find((m) => m.userId !== userId)?.user ?? null;
+      membership?.couple.members.find(
+        (m: { userId: string; user: { id: string; displayName: string; photoUrl: string | null; pronouns: string | null } }) =>
+          m.userId !== userId,
+      )?.user ?? null;
 
     return {
       id: user.id,

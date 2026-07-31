@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { CardCategory } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CouplesService } from '../couples/couples.service';
 import { BotService } from '../bot/bot.service';
+import { CardCategory } from '../types/models';
 
 @Injectable()
 export class CardsService {

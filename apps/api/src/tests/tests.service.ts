@@ -5,6 +5,14 @@ import { BotService } from '../bot/bot.service';
 
 type Option = { id: string; label: string; scoreKey?: string };
 
+type SessionAnswer = { userId: string; questionId: string; optionId: string };
+type SessionParticipant = {
+  userId: string;
+  status: string;
+  user: { id: string; displayName: string; telegramId?: bigint };
+};
+type SessionQuestion = { id: string; order: number; text: string; options: unknown };
+
 @Injectable()
 export class TestsService {
   constructor(
@@ -94,14 +102,17 @@ export class TestsService {
     });
     if (!session) throw new NotFoundException('Сессия не найдена');
 
-    const isParticipant = session.participants.some((p) => p.userId === userId);
+    const participants = session.participants as SessionParticipant[];
+    const answers = session.answers as SessionAnswer[];
+    const questions = session.test.questions as SessionQuestion[];
+
+    const isParticipant = participants.some((p) => p.userId === userId);
     if (!isParticipant) throw new BadRequestException('Нет доступа к сессии');
 
-    const myAnswers = session.answers.filter((a) => a.userId === userId);
-    const partner = session.participants.find((p) => p.userId !== userId);
+    const myAnswers = answers.filter((a) => a.userId === userId);
+    const partner = participants.find((p) => p.userId !== userId);
     const bothDone =
-      session.participants.length > 0 &&
-      session.participants.every((p) => p.status === 'done');
+      participants.length > 0 && participants.every((p) => p.status === 'done');
 
     return {
       id: session.id,
@@ -112,14 +123,14 @@ export class TestsService {
         title: session.test.title,
         description: session.test.description,
         type: session.test.type,
-        questions: session.test.questions.map((q) => ({
+        questions: questions.map((q) => ({
           id: q.id,
           order: q.order,
           text: q.text,
           options: q.options,
         })),
       },
-      participants: session.participants.map((p) => ({
+      participants: participants.map((p) => ({
         userId: p.userId,
         displayName: p.user.displayName,
         status: p.status,
@@ -139,7 +150,9 @@ export class TestsService {
     data: { questionId: string; optionId: string },
   ) {
     const session = await this.getSession(userId, sessionId);
-    const question = session.test.questions.find((q) => q.id === data.questionId);
+    const question = session.test.questions.find(
+      (q: { id: string; options: unknown }) => q.id === data.questionId,
+    );
     if (!question) throw new BadRequestException('Вопрос не найден');
 
     const options = question.options as Option[];
@@ -185,8 +198,12 @@ export class TestsService {
     });
     if (!full) throw new NotFoundException('Сессия не найдена');
 
-    const myAnswers = full.answers.filter((a) => a.userId === userId);
-    if (myAnswers.length < full.test.questions.length) {
+    const answers = full.answers as SessionAnswer[];
+    const participants = full.participants as SessionParticipant[];
+    const questions = full.test.questions as SessionQuestion[];
+
+    const myAnswers = answers.filter((a) => a.userId === userId);
+    if (myAnswers.length < questions.length) {
       throw new BadRequestException('Ответьте на все вопросы');
     }
 
@@ -198,7 +215,7 @@ export class TestsService {
     const refreshed = await this.prisma.testParticipant.findMany({
       where: { sessionId },
     });
-    const allDone = refreshed.every((p) => p.status === 'done');
+    const allDone = refreshed.every((p: { status: string }) => p.status === 'done');
 
     if (!allDone) {
       await this.prisma.testSession.update({
@@ -206,8 +223,8 @@ export class TestsService {
         data: { status: 'waiting_partner' },
       });
 
-      const partner = full.participants.find((p) => p.userId !== userId);
-      if (partner) {
+      const partner = participants.find((p) => p.userId !== userId);
+      if (partner?.user.telegramId != null) {
         await this.bot.notifyUser(
           partner.user.telegramId,
           'Партнёр завершил свою часть теста',
@@ -220,7 +237,15 @@ export class TestsService {
       return this.getSession(userId, sessionId);
     }
 
-    const result = this.buildResult(full);
+    const result = this.buildResult({
+      test: {
+        type: full.test.type,
+        title: full.test.title,
+        questions,
+      },
+      participants,
+      answers,
+    });
     await this.prisma.testSession.update({
       where: { id: sessionId },
       data: {
