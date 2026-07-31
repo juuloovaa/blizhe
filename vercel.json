@@ -1,4 +1,9 @@
 {
   "installCommand": "npm install",
-  "buildCommand": "node ./scripts/vercel-build.cjs"
+  "buildCommand": "node ./scripts/vercel-build.cjs",
+  "outputDirectory": "apps/web/dist",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
