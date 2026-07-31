@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: blizhe
+      POSTGRES_PASSWORD: blizhe
+      POSTGRES_DB: blizhe
+    ports:
+      - "5432:5432"
+    volumes:
+      - blizhe_pg:/var/lib/postgresql/data
+
+volumes:
+  blizhe_pg:
