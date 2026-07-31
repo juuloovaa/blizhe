@@ -12,3 +12,5 @@ apps/web/dist
 .tools
 
 *.tsbuildinfo
+.vercel
+.env*
