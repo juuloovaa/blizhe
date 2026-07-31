@@ -1,7 +1,7 @@
 {
   "name": "blizhe",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "workspaces": [
     "apps/*"
   ],
@@ -10,7 +10,7 @@
     "dev": "npm run dev --workspace=@blizhe/api & npm run dev --workspace=@blizhe/web",
     "dev:api": "npm run dev --workspace=@blizhe/api",
     "dev:web": "npm run dev --workspace=@blizhe/web",
-    "build": "npm run prisma:generate --workspace=@blizhe/api && npm run build --workspace=@blizhe/api && npm run build --workspace=@blizhe/web",
+    "build": "node ./scripts/vercel-build.cjs",
     "db:up": "docker compose up -d",
     "db:migrate": "npm run prisma:migrate --workspace=@blizhe/api",
     "db:seed": "npm run prisma:seed --workspace=@blizhe/api"
