@@ -3,7 +3,13 @@
   "buildCommand": "node ./scripts/vercel-build.cjs",
   "outputDirectory": "apps/web/dist",
   "framework": null,
+  "functions": {
+    "api/[...all].js": {
+      "maxDuration": 30,
+      "includeFiles": "{apps/api/dist/**,node_modules/.prisma/**,node_modules/@prisma/client/**}"
+    }
+  },
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

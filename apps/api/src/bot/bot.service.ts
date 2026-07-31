@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Bot, InlineKeyboard, Keyboard } from 'grammy';
+import type { Update } from 'grammy/types';
 import { PrismaService } from '../prisma/prisma.service';
 
 type NotifyKind =
@@ -14,25 +15,55 @@ type NotifyKind =
 export class BotService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(BotService.name);
   private bot?: Bot;
+  private polling = false;
 
   constructor(
     private readonly config: ConfigService,
     private readonly prisma: PrismaService,
   ) {}
 
+  private get isServerless() {
+    return Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+  }
+
   async onModuleInit() {
     const token = this.config.get<string>('TELEGRAM_BOT_TOKEN');
     if (!token || token.includes('ABC-DEF')) {
-      this.logger.warn('TELEGRAM_BOT_TOKEN not set — bot polling disabled');
+      this.logger.warn('TELEGRAM_BOT_TOKEN not set — bot disabled');
       return;
     }
 
     this.bot = new Bot(token);
+    this.registerHandlers();
+    this.bot.catch((err) => this.logger.error(err));
+
+    // Polling only for long-running servers. On Vercel use webhook.
+    if (!this.isServerless) {
+      this.polling = true;
+      void this.bot.start({
+        onStart: () => this.logger.log('Telegram bot polling started'),
+      });
+    } else {
+      this.logger.log('Serverless mode: bot ready for webhook + notify API');
+    }
+  }
+
+  async onModuleDestroy() {
+    if (this.polling) {
+      await this.bot?.stop();
+    }
+  }
+
+  private registerHandlers() {
+    if (!this.bot) return;
     const webAppUrl = this.config.get<string>('WEBAPP_URL') || 'http://localhost:5173';
 
     this.bot.command('start', async (ctx) => {
       const payload = ctx.match?.toString() || '';
-      const keyboard = new InlineKeyboard().webApp('Открыть приложение', this.withStartParam(webAppUrl, payload));
+      const keyboard = new InlineKeyboard().webApp(
+        'Открыть приложение',
+        this.withStartParam(webAppUrl, payload),
+      );
 
       if (payload.startsWith('invite_')) {
         await ctx.reply(
@@ -53,22 +84,24 @@ export class BotService implements OnModuleInit, OnModuleDestroy {
       );
       await ctx.reply('Или откройте Mini App здесь:', { reply_markup: keyboard });
     });
-
-    this.bot.catch((err) => this.logger.error(err));
-    void this.bot.start({
-      onStart: () => this.logger.log('Telegram bot started'),
-    });
   }
 
-  async onModuleDestroy() {
-    await this.bot?.stop();
+  async handleUpdate(update: Update) {
+    if (!this.bot) return;
+    await this.bot.handleUpdate(update);
+  }
+
+  async ensureWebhook(publicBaseUrl: string) {
+    if (!this.bot) return null;
+    const url = `${publicBaseUrl.replace(/\/$/, '')}/api/bot/webhook`;
+    await this.bot.api.setWebhook(url);
+    return url;
   }
 
   private withStartParam(url: string, payload: string) {
     if (!payload) return url;
     const u = new URL(url);
     u.searchParams.set('tgWebAppStartParam', payload);
-    // Also support our own query for browser/dev
     if (payload.startsWith('invite_')) {
       u.searchParams.set('invite', payload.replace(/^invite_/, ''));
     }
@@ -93,7 +126,6 @@ export class BotService implements OnModuleInit, OnModuleDestroy {
 
     const webAppUrl = this.config.get<string>('WEBAPP_URL') || 'http://localhost:5173';
     const url = new URL(webAppUrl);
-    // path as hash route
     const base = `${url.origin}${url.pathname}`.replace(/\/$/, '');
     const appUrl = `${base}/#${path}`;
     const keyboard = new InlineKeyboard().webApp('Открыть', appUrl);
