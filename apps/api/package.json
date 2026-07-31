@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "tsx watch src/main.ts",
-    "postinstall": "DATABASE_URL=${DATABASE_URL:-postgresql://prisma:prisma@localhost:5432/prisma} prisma generate",
-    "build": "DATABASE_URL=${DATABASE_URL:-postgresql://prisma:prisma@localhost:5432/prisma} prisma generate && tsc -p tsconfig.json",
+    "postinstall": "node ./scripts/prisma-generate.cjs",
+    "build": "node ./scripts/prisma-generate.cjs && tsc -p tsconfig.json",
     "start": "node dist/main.js",
-    "prisma:generate": "DATABASE_URL=${DATABASE_URL:-postgresql://prisma:prisma@localhost:5432/prisma} prisma generate",
+    "prisma:generate": "node ./scripts/prisma-generate.cjs",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "tsx prisma/seed.ts",
     "prisma:push": "prisma db push"
