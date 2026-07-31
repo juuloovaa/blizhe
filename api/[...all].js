@@ -13,6 +13,16 @@ async function getApp() {
 
 module.exports = async function handler(req, res) {
   try {
+    // Vercel sometimes leaves body as string; Nest ValidationPipe needs an object.
+    if (typeof req.body === 'string') {
+      try {
+        req.body = JSON.parse(req.body || '{}');
+      } catch {
+        req.body = {};
+      }
+    }
+    if (req.body == null) req.body = {};
+
     const app = await getApp();
     return app(req, res);
   } catch (error) {

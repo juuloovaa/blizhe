@@ -1,12 +1,12 @@
 import { Body, Controller, Delete, Get, Patch, Post, UseGuards } from '@nestjs/common';
-import { IsBoolean, IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsBoolean, IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
 import { AuthGuard } from '../auth/auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { UsersService } from './users.service';
 import { AuthUser, UserMode } from '../types/models';
 
 class OnboardingDto {
-  @IsEnum(UserMode)
+  @IsIn(['solo', 'couple'])
   mode!: UserMode;
 
   @IsOptional()
@@ -32,7 +32,7 @@ class UpdateProfileDto {
   pronouns?: string | null;
 
   @IsOptional()
-  @IsEnum(UserMode)
+  @IsIn(['solo', 'couple'])
   mode?: UserMode;
 }
 
@@ -55,8 +55,9 @@ export class UsersController {
   }
 
   @Post('onboarding')
-  onboarding(@CurrentUser() user: AuthUser, @Body() dto: OnboardingDto) {
-    return this.usersService.completeOnboarding(user.id, dto);
+  async onboarding(@CurrentUser() user: AuthUser, @Body() dto: OnboardingDto) {
+    await this.usersService.completeOnboarding(user.id, dto);
+    return this.usersService.getMe(user.id);
   }
 
   @Patch()

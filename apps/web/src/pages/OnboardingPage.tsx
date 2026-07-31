@@ -5,7 +5,7 @@ import { haptic } from '../telegram/webapp';
 import type { Me } from '../types';
 
 export function OnboardingPage() {
-  const { me, refresh } = useAuth();
+  const { me, setMe } = useAuth();
   const [step, setStep] = useState<1 | 2>(1);
   const [mode, setMode] = useState<'solo' | 'couple'>('solo');
   const [displayName, setDisplayName] = useState(me?.displayName || '');
@@ -14,21 +14,24 @@ export function OnboardingPage() {
   const [error, setError] = useState<string | null>(null);
 
   async function finish() {
+    if (saving) return;
     setSaving(true);
     setError(null);
     try {
-      await api<Me>('/me/onboarding', {
+      const updated = await api<Me>('/me/onboarding', {
         method: 'POST',
         body: JSON.stringify({
           mode,
-          displayName: displayName.trim() || undefined,
+          displayName: displayName.trim() || me?.displayName || 'Пользователь',
           pronouns: pronouns.trim() || undefined,
         }),
       });
       haptic('success');
-      await refresh();
+      setMe(updated);
     } catch (e) {
-      setError((e as Error).message);
+      const message = (e as Error).message || 'Не удалось сохранить';
+      setError(message);
+      console.error('onboarding failed', e);
     } finally {
       setSaving(false);
     }
@@ -48,6 +51,7 @@ export function OnboardingPage() {
         <div className="section stack">
           <h2 className="h2">Как вы здесь?</h2>
           <button
+            type="button"
             className={`choice ${mode === 'solo' ? 'selected' : ''}`}
             onClick={() => {
               setMode('solo');
@@ -58,6 +62,7 @@ export function OnboardingPage() {
             <span className="muted">Личная рефлексия, тесты и помощник</span>
           </button>
           <button
+            type="button"
             className={`choice ${mode === 'couple' ? 'selected' : ''}`}
             onClick={() => {
               setMode('couple');
@@ -67,7 +72,7 @@ export function OnboardingPage() {
             <strong>Я в паре</strong>
             <span className="muted">Можно пригласить партнёра по ссылке</span>
           </button>
-          <button className="btn btn-block" onClick={() => setStep(2)}>
+          <button type="button" className="btn btn-block" onClick={() => setStep(2)}>
             Дальше
           </button>
         </div>
@@ -93,10 +98,10 @@ export function OnboardingPage() {
             />
           </div>
           {error && <div className="error-box">{error}</div>}
-          <button className="btn btn-secondary btn-block" onClick={() => setStep(1)}>
+          <button type="button" className="btn btn-secondary btn-block" onClick={() => setStep(1)}>
             Назад
           </button>
-          <button className="btn btn-block" disabled={saving} onClick={finish}>
+          <button type="button" className="btn btn-block" disabled={saving} onClick={() => void finish()}>
             {saving ? 'Сохраняем…' : 'Начать'}
           </button>
         </div>
