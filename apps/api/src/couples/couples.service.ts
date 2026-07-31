@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Prisma } from '@prisma/client';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -209,7 +210,7 @@ export class CouplesService {
       this.prisma.dailyAnswer.deleteMany({ where: { coupleId } }),
       this.prisma.testSession.updateMany({
         where: { coupleId },
-        data: { status: 'cancelled', resultJson: null },
+        data: { status: 'cancelled', resultJson: Prisma.DbNull },
       }),
     ]);
 
