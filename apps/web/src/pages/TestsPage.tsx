@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
+import { Doodles } from '../components/Doodles';
 import { haptic } from '../telegram/webapp';
 
 type TestItem = {
@@ -55,10 +56,12 @@ export function TestsPage() {
   };
 
   return (
-    <div className="app-shell screen">
-      <p className="eyebrow">Тесты</p>
+    <div className="app-shell screen" style={{ overflow: 'hidden' }}>
+      <Doodles scene="default" />
+      <div style={{ position: 'relative', zIndex: 1 }}>
+      <p className="eyebrow">тесты</p>
       <h1 className="h2">Узнать себя и друг друга</h1>
-      <p className="lead">Без диагнозов и ярлыков — только материал для спокойного разговора.</p>
+      <p className="lead-hand">без диагнозов и ярлыков — просто повод поговорить</p>
 
       {error && <div className="section error-box">{error}</div>}
 
@@ -87,6 +90,7 @@ export function TestsPage() {
           ))}
         </section>
       ))}
+      </div>
     </div>
   );
 }

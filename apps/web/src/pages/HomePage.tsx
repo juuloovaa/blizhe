@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api/client';
+import { Doodles } from '../components/Doodles';
 import { useAuth } from '../state/AuthContext';
 import { haptic } from '../telegram/webapp';
 import { MOOD_LABELS, type MoodType } from '../types';
@@ -94,23 +95,27 @@ export function HomePage() {
   if (!data && !error) {
     return (
       <div className="app-shell">
-        <p className="muted">Загружаем день…</p>
+        <p className="lead-hand">собираем ваш тихий день…</p>
       </div>
     );
   }
 
   return (
-    <div className="app-shell screen">
+    <div className="app-shell screen" style={{ overflow: 'hidden' }}>
+      <Doodles scene="home" />
+      <div style={{ position: 'relative', zIndex: 1 }}>
       <div className="row space-between">
         <div>
-          <p className="eyebrow">Сегодня</p>
-          <h1 className="brand" style={{ fontSize: '1.7rem' }}>
+          <p className="eyebrow">сегодня</p>
+          <h1 className="brand" style={{ fontSize: '1.85rem' }}>
             Бли<span>же</span>
           </h1>
         </div>
-        <div className="badge">{me?.couple ? 'В паре' : 'Для себя'}</div>
+        <div className={`badge ${me?.couple ? 'badge-warm' : ''}`}>
+          {me?.couple ? 'вместе' : 'для себя'}
+        </div>
       </div>
-      <p className="lead">Привет, {me?.displayName}. Как вы себя чувствуете?</p>
+      <p className="lead-hand">привет, {me?.displayName}. тут можно просто быть</p>
 
       {error && <div className="section error-box">{error}</div>}
 
@@ -265,6 +270,7 @@ export function HomePage() {
           </Link>
         )}
       </section>
+      </div>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api/client';
+import { Doodles } from '../components/Doodles';
 import { useAuth } from '../state/AuthContext';
 import { haptic } from '../telegram/webapp';
 
@@ -80,10 +81,12 @@ export function CardsPage() {
   }
 
   return (
-    <div className="app-shell screen">
-      <p className="eyebrow">Карточки</p>
+    <div className="app-shell screen" style={{ overflow: 'hidden' }}>
+      <Doodles scene="default" />
+      <div style={{ position: 'relative', zIndex: 1 }}>
+      <p className="eyebrow">карточки</p>
       <h1 className="h2">Вытянуть мысль</h1>
-      <p className="lead">Вопросы и идеи для сближения, рефлексии и тепла.</p>
+      <p className="lead-hand">вопросы и идеи — без правильных ответов</p>
 
       <div className="section row" style={{ flexWrap: 'wrap' }}>
         <button className={`chip ${tab === 'draw' ? 'active' : ''}`} onClick={() => setTab('draw')}>
@@ -178,6 +181,7 @@ export function CardsPage() {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }

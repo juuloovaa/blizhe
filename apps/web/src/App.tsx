@@ -1,5 +1,6 @@
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { BottomNav } from './components/BottomNav';
+import { Doodles } from './components/Doodles';
 import { AuthProvider, useAuth } from './state/AuthContext';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { HomePage } from './pages/HomePage';
@@ -26,14 +27,15 @@ function AppRoutes() {
   if (loading) {
     return (
       <div className="loading-screen">
-        <div>
+        <Doodles scene="onboarding" />
+        <div style={{ position: 'relative', zIndex: 1 }}>
           <div className="mascot" style={{ margin: '0 auto 16px' }}>
             б
           </div>
           <h1 className="brand">
             Бли<span>же</span>
           </h1>
-          <p className="muted">Открываем пространство…</p>
+          <p className="lead-hand">сейчас будет тепло…</p>
         </div>
       </div>
     );
@@ -42,15 +44,13 @@ function AppRoutes() {
   if (error || !me) {
     return (
       <div className="loading-screen">
-        <div style={{ maxWidth: 360 }}>
+        <Doodles scene="default" />
+        <div style={{ maxWidth: 360, position: 'relative', zIndex: 1 }}>
           <h1 className="brand">
             Бли<span>же</span>
           </h1>
           <div className="section error-box">{error || 'Не удалось авторизоваться'}</div>
-          <p className="muted">
-            Откройте приложение через Telegram-бота. Для локальной разработки добавьте
-            `?devUser=1001:Анна` в URL.
-          </p>
+          <p className="lead-hand">откройте приложение через бота — так спокойнее</p>
         </div>
       </div>
     );

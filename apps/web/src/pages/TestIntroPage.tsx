@@ -46,16 +46,16 @@ export function TestIntroPage() {
   if (!test && !error) {
     return (
       <div className="app-shell">
-        <p className="muted">Загрузка…</p>
+        <p className="lead-hand">чуть-чуть подождите…</p>
       </div>
     );
   }
 
   return (
     <div className="app-shell screen">
-      <p className="eyebrow">Тест</p>
+      <p className="eyebrow">тест</p>
       <h1 className="h2">{test?.title}</h1>
-      <p className="lead">{test?.description}</p>
+      <p className="lead-hand">{test?.description}</p>
       <div className="section panel stack">
         <p className="muted" style={{ margin: 0 }}>
           {test?.questions.length} вопросов · результат без категоричных оценок

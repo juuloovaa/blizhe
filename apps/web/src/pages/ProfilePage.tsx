@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api/client';
 import { Avatar } from '../components/Avatar';
+import { Doodles } from '../components/Doodles';
 import { useAuth } from '../state/AuthContext';
 import { haptic, shareInviteLink } from '../telegram/webapp';
 import type { NotificationSettings } from '../types';
@@ -112,16 +113,18 @@ export function ProfilePage() {
   if (!me) return null;
 
   return (
-    <div className="app-shell screen">
-      <p className="eyebrow">Профиль</p>
+    <div className="app-shell screen" style={{ overflow: 'hidden' }}>
+      <Doodles scene="default" />
+      <div style={{ position: 'relative', zIndex: 1 }}>
+      <p className="eyebrow">это вы</p>
       <div className="row" style={{ gap: 14, marginTop: 8 }}>
         <Avatar name={me.displayName} photoUrl={me.photoUrl} size={64} />
         <div>
           <h1 className="h2" style={{ margin: 0 }}>
             {me.displayName}
           </h1>
-          <p className="muted" style={{ margin: '4px 0 0' }}>
-            {me.username ? `@${me.username}` : 'Telegram'}
+          <p className="lead-hand" style={{ margin: '4px 0 0' }}>
+            {me.username ? `@${me.username}` : 'telegram'}
             {me.pronouns ? ` · ${me.pronouns}` : ''}
           </p>
         </div>
@@ -234,6 +237,7 @@ export function ProfilePage() {
           Удалить аккаунт и данные
         </button>
       </section>
+      </div>
     </div>
   );
 }

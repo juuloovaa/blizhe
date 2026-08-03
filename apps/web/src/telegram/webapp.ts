@@ -83,19 +83,19 @@ export function initTelegramApp() {
 
 export function applyTheme(wa = getWebApp()) {
   if (!wa) return;
-  const t = wa.themeParams;
   const root = document.documentElement;
-  root.style.setProperty('--tg-bg', t.bg_color || '#f7f3ee');
-  root.style.setProperty('--tg-text', t.text_color || '#1c1917');
-  root.style.setProperty('--tg-hint', t.hint_color || '#78716c');
-  root.style.setProperty('--tg-link', t.link_color || '#0f766e');
-  root.style.setProperty('--tg-button', t.button_color || '#0f766e');
-  root.style.setProperty('--tg-button-text', t.button_text_color || '#ffffff');
-  root.style.setProperty('--tg-secondary', t.secondary_bg_color || '#ebe4da');
-  root.dataset.colorScheme = wa.colorScheme;
+  // Brand paper atmosphere first; only gently borrow Telegram contrast if needed.
+  root.style.setProperty('--tg-bg', '#fbf6ee');
+  root.style.setProperty('--tg-text', '#2a2f2c');
+  root.style.setProperty('--tg-hint', '#6b736e');
+  root.style.setProperty('--tg-link', '#2f6b57');
+  root.style.setProperty('--tg-button', '#f07858');
+  root.style.setProperty('--tg-button-text', '#fffaf5');
+  root.style.setProperty('--tg-secondary', '#f3ebe0');
+  root.dataset.colorScheme = 'light';
   try {
-    wa.setHeaderColor(t.bg_color || '#f7f3ee');
-    wa.setBackgroundColor(t.bg_color || '#f7f3ee');
+    wa.setHeaderColor('#fbf6ee');
+    wa.setBackgroundColor('#fbf6ee');
   } catch {
     // older clients
   }

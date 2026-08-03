@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../api/client';
+import { Doodles } from '../components/Doodles';
 import { haptic } from '../telegram/webapp';
 
 type Message = {
@@ -63,16 +64,18 @@ export function AssistantPage() {
   }
 
   return (
-    <div className="app-shell screen">
+    <div className="app-shell screen" style={{ overflow: 'hidden' }}>
+      <Doodles scene="assistant" />
+      <div style={{ position: 'relative', zIndex: 1 }}>
       <div className="row" style={{ gap: 14 }}>
         <div className="mascot">б</div>
         <div>
-          <p className="eyebrow">Только для вас</p>
+          <p className="eyebrow">только ваше</p>
           <h1 className="h2" style={{ margin: 0 }}>
             Помощник
           </h1>
-          <p className="muted" style={{ margin: '4px 0 0' }}>
-            Партнёр не видит этот чат
+          <p className="lead-hand" style={{ margin: '4px 0 0' }}>
+            партнёр сюда не заглянет
           </p>
         </div>
       </div>
@@ -82,8 +85,8 @@ export function AssistantPage() {
       <div className="section chat">
         {messages.length === 0 && (
           <div className="bubble assistant">
-            Привет. Я рядом, чтобы помочь разобраться в чувствах, подготовиться к разговору или
-            сделать мягкое упражнение. Чем могу поддержать?
+            привет. я рядом — разобрать чувства, подготовиться к разговору или сделать мягкое
+            упражнение. чем могу поддержать?
           </div>
         )}
         {messages.map((m) => (
@@ -94,7 +97,7 @@ export function AssistantPage() {
             {m.content}
           </div>
         ))}
-        {busy && <div className="bubble assistant muted">Думаю…</div>}
+        {busy && <div className="bubble assistant muted">думаю…</div>}
         <div ref={endRef} />
       </div>
 
@@ -118,13 +121,14 @@ export function AssistantPage() {
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Напишите, что чувствуете…"
+          placeholder="напишите, что чувствуете…"
           maxLength={2000}
         />
         <button className="btn" disabled={busy || !text.trim()} type="submit">
           →
         </button>
       </form>
+      </div>
     </div>
   );
 }

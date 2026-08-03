@@ -1,11 +1,11 @@
 import { NavLink } from 'react-router-dom';
 
 const items = [
-  { to: '/', label: 'Главная', icon: '⌂' },
-  { to: '/cards', label: 'Карточки', icon: '◇' },
+  { to: '/', label: 'Дом', icon: '✦' },
+  { to: '/cards', label: 'Карты', icon: '♡' },
   { to: '/tests', label: 'Тесты', icon: '◎' },
-  { to: '/assistant', label: 'Помощник', icon: '✦' },
-  { to: '/profile', label: 'Профиль', icon: '○' },
+  { to: '/assistant', label: 'Рядом', icon: '☺' },
+  { to: '/profile', label: 'Я', icon: '❀' },
 ];
 
 export function BottomNav() {
