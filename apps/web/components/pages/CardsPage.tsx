@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Heart } from 'lucide-react';
 import { api } from '@/lib/api';
 import { toastError, toastSuccess } from '@/lib/toast';
 import { haptic } from '@/lib/telegram';
-import { Doodles } from '@/components/Doodles';
 import { Screen } from '@/components/Screen';
 import { useAuth } from '@/state/AuthContext';
 
@@ -82,105 +82,129 @@ export function CardsPage() {
   }
 
   return (
-    <Screen>
-      <Doodles scene="default" />
-      <div className="relative z-[1]">
-        <p className="eyebrow">карточки</p>
-        <h1 className="h2">Вытянуть мысль</h1>
-        <p className="lead-hand">вопросы и идеи — без правильных ответов</p>
+    <Screen gradient={tab === 'draw' && !card}>
+      <p className="h-lg">
+        {tab === 'draw' && !card ? (
+          <>
+            Карты
+            <br />
+            для разговора
+          </>
+        ) : (
+          'Карты'
+        )}
+      </p>
 
-        <div className="section row flex-wrap">
-          <button className={`chip ${tab === 'draw' ? 'active' : ''}`} onClick={() => setTab('draw')}>
-            Вытянуть
-          </button>
+      <div className="tabs section">
+            {(
+          [
+            ['draw', 'Вытянуть'],
+            ['favorites', 'Избранное'],
+            ...(me?.couple ? [['incoming', 'От партнёра'] as const] : []),
+          ] as Array<[typeof tab, string]>
+        ).map(([id, label]) => (
           <button
-            className={`chip ${tab === 'favorites' ? 'active' : ''}`}
-            onClick={() => setTab('favorites')}
+            key={id}
+            className={tab === id ? 'on' : ''}
+            onClick={() => {
+              setTab(id);
+              if (id === 'draw') setCard(null);
+            }}
           >
-            Избранное
+            {label}
           </button>
-          {me?.couple && (
+        ))}
+      </div>
+
+      {tab === 'draw' && !card && (
+        <div className="section stack">
+          {categories.map((c) => (
             <button
-              className={`chip ${tab === 'incoming' ? 'active' : ''}`}
-              onClick={() => setTab('incoming')}
+              key={c.id}
+              className={`choice ${category === c.id ? 'selected' : ''}`}
+              onClick={() => {
+                setCategory(c.id);
+                haptic('selection');
+              }}
             >
-              От партнёра
+              {c.title}
+              <small>{c.description}</small>
             </button>
+          ))}
+          <button className="btn btn-block dark" disabled={busy} onClick={draw} style={{ marginTop: 8 }}>
+            {busy ? 'Тянем…' : 'Вытянуть карточку ✦'}
+          </button>
+        </div>
+      )}
+
+      {tab === 'draw' && card && (
+        <div className="section stack">
+          <div className="row space-between">
+            <button className="tiny-cta" onClick={() => setCard(null)}>
+              ←
+            </button>
+            <span className="badge">
+              {categories.find((c) => c.id === card.category)?.title || card.category}
+            </span>
+            <Heart className="h-5 w-5" fill={card.isFavorite ? 'var(--hot)' : 'none'} color="var(--ink)" />
+          </div>
+          <div className={`card-face ${card.category}`}>
+            <small className="eyebrow" style={{ color: 'var(--ink-soft)' }}>
+              вытянули для вас
+            </small>
+            <p>{card.text}</p>
+            <small style={{ fontWeight: 800 }}>Не ищите красивый ответ. Первый — уже настоящий.</small>
+          </div>
+          <div className="row">
+            <button className="btn btn-ghost" style={{ flex: 1 }} onClick={toggleFavorite}>
+              ♡ {card.isFavorite ? 'В избранном' : 'Сохранить'}
+            </button>
+            {me?.couple && (
+              <button className="btn" style={{ flex: 1 }} disabled={busy} onClick={share}>
+                Партнёру ↗
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {tab === 'favorites' && (
+        <div className="section stack">
+          <div className="label">сохранённые</div>
+          {favorites.length === 0 ? (
+            <div className="empty">Пока пусто — вытяните первую карточку.</div>
+          ) : (
+            favorites.map((f) => (
+              <div key={f.id} className="card tinted">
+                <span className="chip">♡ ваша карта</span>
+                <p className="question" style={{ marginTop: 9 }}>
+                  {f.text}
+                </p>
+              </div>
+            ))
+          )}
+          <p className="copy" style={{ textAlign: 'center' }}>
+            Коллекция растёт вместе с вами.
+          </p>
+        </div>
+      )}
+
+      {tab === 'incoming' && (
+        <div className="section stack">
+          {incoming.length === 0 ? (
+            <div className="empty">Партнёр ещё не отправлял карточки.</div>
+          ) : (
+            incoming.map((item) => (
+              <div key={item.id} className="card">
+                <span className="chip">от {item.fromUser.displayName}</span>
+                <p className="question" style={{ marginTop: 9 }}>
+                  {item.card.text}
+                </p>
+              </div>
+            ))
           )}
         </div>
-
-        {tab === 'draw' && (
-          <div className="section stack">
-            <div className="stack">
-              {categories.map((c) => (
-                <button
-                  key={c.id}
-                  className={`choice ${category === c.id ? 'selected' : ''}`}
-                  onClick={() => {
-                    setCategory(c.id);
-                    haptic('selection');
-                  }}
-                >
-                  <strong>{c.title}</strong>
-                  <span className="muted">{c.description}</span>
-                </button>
-              ))}
-            </div>
-            <button className="btn btn-block" disabled={busy} onClick={draw}>
-              {busy ? 'Тянем…' : 'Вытянуть карточку'}
-            </button>
-
-            {card && (
-              <div className={`card-face ${card.category}`}>
-                <span className="badge" style={{ background: 'rgba(255,255,255,0.18)', color: '#fff' }}>
-                  {categories.find((c) => c.id === card.category)?.title || card.category}
-                </span>
-                <p>{card.text}</p>
-                <div className="row" style={{ gap: 8 }}>
-                  <button className="btn btn-secondary" onClick={toggleFavorite}>
-                    {card.isFavorite ? 'В избранном' : 'Сохранить'}
-                  </button>
-                  {me?.couple && (
-                    <button className="btn" disabled={busy} onClick={share}>
-                      Партнёру
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {tab === 'favorites' && (
-          <div className="section stack">
-            {favorites.length === 0 ? (
-              <div className="empty">Пока пусто — вытяните первую карточку.</div>
-            ) : (
-              favorites.map((f) => (
-                <div key={f.id} className="panel">
-                  <span className="badge">{f.category}</span>
-                  <p style={{ margin: '10px 0 0' }}>{f.text}</p>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-
-        {tab === 'incoming' && (
-          <div className="section stack">
-            {incoming.length === 0 ? (
-              <div className="empty">Партнёр ещё не отправлял карточки.</div>
-            ) : (
-              incoming.map((item) => (
-                <div key={item.id} className="panel">
-                  <span className="muted">От {item.fromUser.displayName}</span>
-                  <p style={{ margin: '8px 0 0' }}>{item.card.text}</p>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-      </div>
+      )}
     </Screen>
   );
 }

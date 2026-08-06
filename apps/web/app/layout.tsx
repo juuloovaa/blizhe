@@ -1,31 +1,19 @@
 import type { CSSProperties, ReactNode } from 'react';
 import type { Metadata, Viewport } from 'next';
-import { Caveat, Fredoka, Nunito } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import Script from 'next/script';
 import { Providers } from '@/components/Providers';
 import './globals.css';
 
-const nunito = Nunito({
+const inter = Inter({
   subsets: ['latin', 'cyrillic'],
-  variable: '--font-nunito',
-  weight: ['400', '500', '600', '700', '800'],
-});
-
-const fredoka = Fredoka({
-  subsets: ['latin'],
-  variable: '--font-fredoka',
-  weight: ['500', '600', '700'],
-});
-
-const caveat = Caveat({
-  subsets: ['latin', 'cyrillic'],
-  variable: '--font-caveat',
-  weight: ['500', '600', '700'],
+  variable: '--font-inter',
+  weight: ['400', '500', '600', '700', '800', '900'],
 });
 
 export const metadata: Metadata = {
   title: 'Ближе',
-  description: 'Тёплое пространство для близости и спокойных разговоров',
+  description: 'Небольшое безопасное место для разговоров с собой и друг с другом',
 };
 
 export const viewport: Viewport = {
@@ -33,18 +21,18 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: 'cover',
+  themeColor: '#fcf7ef',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="ru" className={`${nunito.variable} ${fredoka.variable} ${caveat.variable}`}>
+    <html lang="ru" className={inter.variable}>
       <body
-        className="font-sans antialiased"
+        className="antialiased"
         style={
           {
-            '--font-sans': 'var(--font-nunito), system-ui, sans-serif',
-            '--font-display': 'var(--font-fredoka), var(--font-nunito), sans-serif',
-            '--font-hand': 'var(--font-caveat), cursive',
+            fontFamily: 'var(--font-inter), ui-sans-serif, system-ui, sans-serif',
+            ['--font-sans' as string]: 'var(--font-inter), ui-sans-serif, system-ui, sans-serif',
           } as CSSProperties
         }
       >

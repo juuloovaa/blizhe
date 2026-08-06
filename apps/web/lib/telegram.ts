@@ -85,17 +85,17 @@ export function initTelegramApp() {
 export function applyTheme(wa = getWebApp()) {
   if (!wa || typeof document === 'undefined') return;
   const root = document.documentElement;
-  root.style.setProperty('--tg-bg', '#fbf6ee');
-  root.style.setProperty('--tg-text', '#2a2f2c');
-  root.style.setProperty('--tg-hint', '#6b736e');
-  root.style.setProperty('--tg-link', '#2f6b57');
-  root.style.setProperty('--tg-button', '#f07858');
-  root.style.setProperty('--tg-button-text', '#fffaf5');
-  root.style.setProperty('--tg-secondary', '#f3ebe0');
+  root.style.setProperty('--tg-bg', '#fcf7ef');
+  root.style.setProperty('--tg-text', '#173d35');
+  root.style.setProperty('--tg-hint', '#597168');
+  root.style.setProperty('--tg-link', '#173d35');
+  root.style.setProperty('--tg-button', '#eb4b70');
+  root.style.setProperty('--tg-button-text', '#fffaf4');
+  root.style.setProperty('--tg-secondary', '#fffaf4');
   root.dataset.colorScheme = 'light';
   try {
-    wa.setHeaderColor('#fbf6ee');
-    wa.setBackgroundColor('#fbf6ee');
+    wa.setHeaderColor('#fcf7ef');
+    wa.setBackgroundColor('#fcf7ef');
   } catch {
     // older clients
   }

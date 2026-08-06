@@ -6,7 +6,6 @@ import { api } from '@/lib/api';
 import { toastError } from '@/lib/toast';
 import { haptic } from '@/lib/telegram';
 import { Avatar } from '@/components/Avatar';
-import { Doodles } from '@/components/Doodles';
 import { Screen } from '@/components/Screen';
 import { useAuth } from '@/state/AuthContext';
 
@@ -45,33 +44,42 @@ export function InviteConfirmPage({ code }: { code: string }) {
     }
   }
 
-  return (
-    <Screen>
-      <Doodles scene="onboarding" />
-      <div className="relative z-[1]">
-        <p className="eyebrow">приглашение</p>
-        <h1 className="brand">
-          Бли<span>же</span>
-        </h1>
-        <p className="lead-hand">можно соединиться — и так же спокойно отключиться позже</p>
+  const name = preview?.inviter.displayName || 'Кто-то';
 
-        {preview && (
-          <div className="section panel stack">
-            <div className="row">
-              <Avatar name={preview.inviter.displayName} photoUrl={preview.inviter.photoUrl} size={56} />
-              <div>
-                <strong>{preview.inviter.displayName}</strong>
-                <div className="muted">приглашает вас в пару</div>
-              </div>
-            </div>
-            <button className="btn btn-block" disabled={busy} onClick={accept}>
-              {busy ? 'Соединяем…' : 'Подтвердить пару'}
-            </button>
-            <button className="btn btn-ghost btn-block" onClick={() => router.push('/')}>
-              Не сейчас
-            </button>
+  return (
+    <Screen gradient className="text-center">
+      <p className="eyebrow">приглашение</p>
+      <p className="h-lg" style={{ marginTop: 8 }}>
+        {name} зовёт вас
+        <br />
+        быть ближе
+      </p>
+
+      {preview && (
+        <div className="card pair section" style={{ textAlign: 'left', display: 'flex', gap: 10, alignItems: 'center' }}>
+          <Avatar name={preview.inviter.displayName} photoUrl={preview.inviter.photoUrl} size={44} />
+          <div>
+            <b style={{ fontSize: 14 }}>{preview.inviter.displayName}</b>
+            <p className="copy" style={{ margin: 0 }}>
+              ваш будущий партнёр
+            </p>
           </div>
-        )}
+        </div>
+      )}
+
+      <p className="copy">После подтверждения вы увидите только то, чем решите делиться.</p>
+
+      <div className="section" style={{ marginTop: 'auto', paddingTop: 24 }}>
+        <button className="btn btn-block" disabled={busy || !preview} onClick={accept}>
+          {busy ? 'Соединяем…' : 'Подтвердить пару'}
+        </button>
+        <button
+          className="btn btn-ghost btn-block"
+          style={{ marginTop: 8 }}
+          onClick={() => router.push('/')}
+        >
+          Не сейчас
+        </button>
       </div>
     </Screen>
   );

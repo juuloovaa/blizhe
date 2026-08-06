@@ -6,7 +6,6 @@ import { toastError, toastSuccess } from '@/lib/toast';
 import { haptic, shareInviteLink } from '@/lib/telegram';
 import type { NotificationSettings } from '@/lib/types';
 import { Avatar } from '@/components/Avatar';
-import { Doodles } from '@/components/Doodles';
 import { Screen } from '@/components/Screen';
 import { useAuth } from '@/state/AuthContext';
 
@@ -27,6 +26,7 @@ export function ProfilePage() {
     me?.notificationSettings || null,
   );
   const [busy, setBusy] = useState(false);
+  const [view, setView] = useState<'main' | 'settings'>('main');
 
   async function loadCouple() {
     const data = await api<CoupleStatus>('/couple');
@@ -91,7 +91,7 @@ export function ProfilePage() {
   }
 
   async function deleteCoupleData() {
-    if (!confirm('Удалить общие данные пары (заметки, ответы, шаринги)?')) return;
+    if (!confirm('Удалить общие данные пары? Оба получат уведомление.')) return;
     await api('/couple/data', { method: 'DELETE' });
     toastSuccess('Общие данные пары удалены');
   }
@@ -116,105 +116,29 @@ export function ProfilePage() {
 
   if (!me) return null;
 
-  return (
-    <Screen>
-      <Doodles scene="default" />
-      <div className="relative z-[1]">
-        <p className="eyebrow">это вы</p>
-        <div className="row" style={{ gap: 14, marginTop: 8 }}>
-          <Avatar name={me.displayName} photoUrl={me.photoUrl} size={64} />
-          <div>
-            <h1 className="h2" style={{ margin: 0 }}>
-              {me.displayName}
-            </h1>
-            <p className="lead-hand" style={{ margin: '4px 0 0' }}>
-              {me.username ? `@${me.username}` : 'telegram'}
-              {me.pronouns ? ` · ${me.pronouns}` : ''}
-            </p>
-          </div>
+  if (view === 'settings') {
+    return (
+      <Screen>
+        <div className="row" style={{ gap: 10 }}>
+          <button className="tiny-cta" onClick={() => setView('main')}>
+            ←
+          </button>
+          <p className="h-md">Настройки</p>
         </div>
 
-        <section className="section stack">
-          <h2 className="h2">Отображение</h2>
-          <div className="field">
-            <label>Имя</label>
-            <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={64} />
-          </div>
-          <div className="field">
-            <label>Местоимения</label>
-            <input value={pronouns} onChange={(e) => setPronouns(e.target.value)} maxLength={32} />
-          </div>
-          <button className="btn" disabled={busy} onClick={saveProfile}>
-            Сохранить
-          </button>
-        </section>
-
-        <section className="section stack">
-          <h2 className="h2">Пара</h2>
-          {couple?.couple?.partner ? (
-            <div className="panel stack">
-              <div className="row">
-                <Avatar
-                  name={couple.couple.partner.displayName}
-                  photoUrl={couple.couple.partner.photoUrl}
-                />
-                <div>
-                  <strong>{couple.couple.partner.displayName}</strong>
-                  <div className="muted">Вы соединены</div>
-                </div>
-              </div>
-              <button className="btn btn-secondary" onClick={disconnect}>
-                Отключиться от пары
-              </button>
-              <button className="btn btn-danger" onClick={blockPartner}>
-                Заблокировать партнёра
-              </button>
-              <button className="btn btn-ghost" onClick={deleteCoupleData}>
-                Удалить общие данные пары
-              </button>
-            </div>
-          ) : (
-            <div className="panel stack">
-              {couple?.pendingInvite ? (
-                <>
-                  <p className="muted" style={{ margin: 0 }}>
-                    Приглашение активно. Отправьте ссылку партнёру.
-                  </p>
-                  <code style={{ fontSize: 12, wordBreak: 'break-all' }}>{couple.pendingInvite.link}</code>
-                  <button className="btn" onClick={() => shareInviteLink(couple.pendingInvite!.link)}>
-                    Поделиться
-                  </button>
-                  <button className="btn btn-ghost" onClick={cancelInvite}>
-                    Отменить приглашение
-                  </button>
-                </>
-              ) : (
-                <>
-                  <p className="muted" style={{ margin: 0 }}>
-                    Создайте персональную ссылку и отправьте её через Telegram.
-                  </p>
-                  <button className="btn" disabled={busy} onClick={createInvite}>
-                    Пригласить партнёра
-                  </button>
-                </>
-              )}
-            </div>
-          )}
-        </section>
-
-        <section className="section panel">
-          <h2 className="h2">Уведомления</h2>
+        <div className="label section">уведомления</div>
+        <div className="card">
           {settings &&
             (
               [
-                ['moodNotes', 'Новая заметка от партнёра'],
-                ['testInvites', 'Приглашение в совместный тест'],
-                ['testPartnerDone', 'Партнёр завершил часть теста'],
-                ['dailyQuestion', 'Новый вопрос дня'],
-                ['partnerCard', 'Партнёр отправил карточку'],
+                ['dailyQuestion', 'Вопрос дня'],
+                ['moodNotes', 'Ответ партнёра'],
+                ['testInvites', 'Напоминание о тесте'],
+                ['partnerCard', 'Новая карта'],
+                ['testPartnerDone', 'Партнёр завершил тест'],
               ] as Array<[keyof NotificationSettings, string]>
             ).map(([key, label]) => (
-              <div className="toggle" key={key}>
+              <div className="profile-row" key={key}>
                 <span>{label}</span>
                 <button
                   className={`switch ${settings[key] ? 'on' : ''}`}
@@ -223,19 +147,139 @@ export function ProfilePage() {
                 />
               </div>
             ))}
-        </section>
+        </div>
 
-        <section className="section panel stack">
-          <h2 className="h2">Приватность</h2>
-          <p className="muted" style={{ margin: 0 }}>
-            Личный чат с помощником не виден партнёру. Ответы на личные вопросы не публикуются
-            автоматически. Мы не показываем онлайн-статус и геолокацию.
-          </p>
-          <button className="btn btn-danger" onClick={deleteAccount}>
-            Удалить аккаунт и данные
+        <div className="label section">данные и приватность</div>
+        <div className="card">
+          <div className="profile-row">
+            <span>
+              Как мы храним данные
+              <small>Личный чат не виден партнёру. Без геолокации и онлайн-статуса.</small>
+            </span>
+          </div>
+          <button className="profile-row danger-text" onClick={deleteAccount} style={{ width: '100%', background: 'none', border: 0, cursor: 'pointer', textAlign: 'left' }}>
+            <span>Удалить аккаунт</span>
+            <b>›</b>
           </button>
-        </section>
+        </div>
+        <p className="copy" style={{ textAlign: 'center' }}>
+          Ваше личное — остаётся личным.
+        </p>
+      </Screen>
+    );
+  }
+
+  const partner = couple?.couple?.partner;
+
+  return (
+    <Screen gradient={!!partner}>
+      <p className="h-lg">{partner ? `Мы с ${partner.displayName.split(' ')[0]}` : 'Профиль'}</p>
+
+      <div className="section card pair">
+        <Avatar name={me.displayName} photoUrl={me.photoUrl} size={50} />
+        {partner && <Avatar name={partner.displayName} photoUrl={partner.photoUrl} size={50} />}
+        <div style={{ flex: 1, marginLeft: partner ? 4 : 0 }}>
+          <b>{partner ? 'Вместе' : me.displayName}</b>
+          <p className="copy" style={{ margin: 0 }}>
+            {partner
+              ? me.displayName
+              : `${me.username ? `@${me.username}` : 'telegram'}${me.pronouns ? ` · ${me.pronouns}` : ''}`}
+          </p>
+        </div>
       </div>
+
+      <div className="label section">о вас</div>
+      <div className="card stack">
+        <div className="field">
+          <label>Имя</label>
+          <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={64} />
+        </div>
+        <div className="field">
+          <label>Местоимения</label>
+          <input value={pronouns} onChange={(e) => setPronouns(e.target.value)} maxLength={32} />
+        </div>
+        <button className="tiny-cta" disabled={busy} onClick={saveProfile} style={{ alignSelf: 'flex-start' }}>
+          Сохранить →
+        </button>
+      </div>
+
+      <div className="label section">пара</div>
+      <div className="card">
+        {partner ? (
+          <>
+            <div className="profile-row">
+              <span>
+                С {partner.displayName}
+                <small>вы соединены</small>
+              </span>
+            </div>
+            <button className="profile-row" onClick={disconnect} style={{ width: '100%', background: 'none', border: 0, cursor: 'pointer', textAlign: 'left' }}>
+              <span>Отключиться от пары</span>
+              <b>›</b>
+            </button>
+            <button className="profile-row danger-text" onClick={blockPartner} style={{ width: '100%', background: 'none', border: 0, cursor: 'pointer', textAlign: 'left' }}>
+              <span>Заблокировать {partner.displayName.split(' ')[0]}</span>
+              <b>›</b>
+            </button>
+            <button className="profile-row danger-text" onClick={deleteCoupleData} style={{ width: '100%', background: 'none', border: 0, cursor: 'pointer', textAlign: 'left' }}>
+              <span>
+                Удалить общие данные
+                <small>Оба получат уведомление</small>
+              </span>
+              <b>›</b>
+            </button>
+          </>
+        ) : couple?.pendingInvite ? (
+          <>
+            <div className="profile-row">
+              <span>
+                Ссылка-приглашение
+                <small style={{ wordBreak: 'break-all' }}>{couple.pendingInvite.link}</small>
+              </span>
+              <b>↗</b>
+            </div>
+            <button
+              className="profile-row"
+              onClick={() => shareInviteLink(couple.pendingInvite!.link)}
+              style={{ width: '100%', background: 'none', border: 0, cursor: 'pointer', textAlign: 'left' }}
+            >
+              <span>Поделиться ссылкой</span>
+              <b>›</b>
+            </button>
+            <button className="profile-row" onClick={cancelInvite} style={{ width: '100%', background: 'none', border: 0, cursor: 'pointer', textAlign: 'left' }}>
+              <span>Отменить приглашение</span>
+              <b>›</b>
+            </button>
+          </>
+        ) : (
+          <button
+            className="profile-row"
+            disabled={busy}
+            onClick={createInvite}
+            style={{ width: '100%', background: 'none', border: 0, cursor: 'pointer', textAlign: 'left' }}
+          >
+            <span>
+              Пригласить партнёра
+              <small>персональная ссылка через Telegram</small>
+            </span>
+            <b>›</b>
+          </button>
+        )}
+      </div>
+
+      <div className="label section">личное</div>
+      <div className="card">
+        <button className="profile-row" onClick={() => setView('settings')} style={{ width: '100%', background: 'none', border: 0, cursor: 'pointer', textAlign: 'left' }}>
+          <span>Уведомления и приватность</span>
+          <b>›</b>
+        </button>
+      </div>
+
+      {partner && (
+        <p className="copy" style={{ textAlign: 'center' }}>
+          У каждой настройки есть время на отмену.
+        </p>
+      )}
     </Screen>
   );
 }

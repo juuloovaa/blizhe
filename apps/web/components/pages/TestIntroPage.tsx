@@ -6,6 +6,7 @@ import { api } from '@/lib/api';
 import { toastError } from '@/lib/toast';
 import { haptic } from '@/lib/telegram';
 import { useTelegramBackButton } from '@/hooks/useTelegramBackButton';
+import { Mascot } from '@/components/Mascot';
 import { Screen } from '@/components/Screen';
 
 type TestDetail = {
@@ -50,25 +51,33 @@ export function TestIntroPage() {
   if (!test) {
     return (
       <div className="app-shell app-shell-plain">
-        <p className="lead-hand">чуть-чуть подождите…</p>
+        <p className="copy">чуть-чуть подождите…</p>
       </div>
     );
   }
 
+  const typeLabel =
+    test.type === 'couple' ? 'совместный' : test.type === 'game' ? 'игровой' : 'личный';
+
   return (
     <Screen plain>
-      <p className="eyebrow">тест</p>
-      <h1 className="h2">{test.title}</h1>
-      <p className="lead-hand">{test.description}</p>
-      <div className="section panel stack">
-        <p className="muted" style={{ margin: 0 }}>
-          {test.questions.length} вопросов · результат без категоричных оценок
-        </p>
-        <p className="muted" style={{ margin: 0 }}>
-          Мы не используем формулировки вроде «вы несовместимы» и не ставим диагнозы.
+      <p className="eyebrow">
+        {typeLabel} тест · {test.questions.length} вопросов
+      </p>
+      <p className="h-lg" style={{ marginTop: 8 }}>
+        {test.title}
+      </p>
+      <div className="section card tinted">
+        <p className="copy" style={{ fontSize: 14, color: 'var(--ink)', margin: 0 }}>
+          {test.description ||
+            'Здесь нет правильных профилей. Только несколько вопросов, чтобы услышать себя чуть яснее.'}
         </p>
       </div>
-      <div className="section">
+      <Mascot className="my-4" />
+      <p className="copy" style={{ textAlign: 'center' }}>
+        Это не диагностика и не совет врача.
+      </p>
+      <div className="section" style={{ marginTop: 'auto', paddingTop: 16 }}>
         <button className="btn btn-block" disabled={busy} onClick={start}>
           {busy ? 'Создаём сессию…' : 'Начать тест'}
         </button>

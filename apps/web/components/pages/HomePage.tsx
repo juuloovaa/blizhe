@@ -6,7 +6,6 @@ import { api } from '@/lib/api';
 import { toastError, toastSuccess } from '@/lib/toast';
 import { haptic } from '@/lib/telegram';
 import { MOOD_LABELS, type MoodType } from '@/lib/types';
-import { Doodles } from '@/components/Doodles';
 import { Screen } from '@/components/Screen';
 import { useAuth } from '@/state/AuthContext';
 
@@ -100,184 +99,243 @@ export function HomePage() {
   if (!data) {
     return (
       <div className="app-shell">
-        <p className="lead-hand">собираем ваш тихий день…</p>
+        <p className="copy">собираем ваш тихий день…</p>
       </div>
     );
   }
 
+  const weekday = new Date().toLocaleDateString('ru-RU', { weekday: 'long' });
+
   return (
-    <Screen>
-      <Doodles scene="home" />
-      <div className="relative z-[1]">
-        <div className="row space-between">
-          <div>
-            <p className="eyebrow">сегодня</p>
-            <h1 className="brand" style={{ fontSize: '1.85rem' }}>
-              Бли<span>же</span>
-            </h1>
-          </div>
-          <div className={`badge ${me?.couple ? 'badge-warm' : ''}`}>
-            {me?.couple ? 'вместе' : 'для себя'}
-          </div>
+    <Screen gradient={!data.hasCouple}>
+      <div className="row space-between" style={{ alignItems: 'flex-start' }}>
+        <div>
+          <p className="eyebrow">сегодня · {weekday}</p>
+          <h1 className="brand brand-sm">ближе</h1>
         </div>
-        <p className="lead-hand">привет, {me?.displayName}. тут можно просто быть</p>
+        <span className={`badge ${me?.couple ? 'badge-warm' : ''}`}>
+          {me?.couple ? 'вместе' : 'для себя'}
+        </span>
+      </div>
 
-        {data.soloQuestion && (
-          <section className="section panel panel-accent stack">
-            <div className="row space-between">
-              <h2 className="h2" style={{ margin: 0 }}>
-                Вопрос дня
-              </h2>
-              <span className="badge">Для себя</span>
-            </div>
-            <p style={{ margin: 0, lineHeight: 1.4 }}>{data.soloQuestion.question.text}</p>
-            <div className="field">
-              <textarea
-                rows={3}
-                value={soloText}
-                onChange={(e) => setSoloText(e.target.value)}
-                placeholder="Короткий ответ для себя…"
-                maxLength={1000}
-              />
-            </div>
-            <button className="btn" disabled={busy || !soloText.trim()} onClick={() => saveAnswer('solo')}>
-              Сохранить ответ
-            </button>
-          </section>
-        )}
+      <p className="h-md" style={{ marginTop: 10 }}>
+        Привет, {me?.displayName}.
+        <br />
+        Как вы сейчас?
+      </p>
 
-        {data.hasCouple && data.coupleQuestion && (
-          <section className="section panel stack">
-            <div className="row space-between">
-              <h2 className="h2" style={{ margin: 0 }}>
-                Для пары
-              </h2>
-              <span className="badge">Вместе</span>
-            </div>
-            <p style={{ margin: 0, lineHeight: 1.4 }}>{data.coupleQuestion.question.text}</p>
-            {!data.coupleQuestion.revealed && (
-              <>
-                <div className="field">
-                  <textarea
-                    rows={3}
-                    value={coupleText}
-                    onChange={(e) => setCoupleText(e.target.value)}
-                    placeholder="Ваш ответ — партнёр увидит после взаимности"
-                    maxLength={1000}
-                  />
+      {data.soloQuestion && (
+        <section className="section card stack">
+          <div className="eyebrow">вопрос дня</div>
+          <p className="question">{data.soloQuestion.question.text}</p>
+          <div className="field">
+            <textarea
+              rows={3}
+              value={soloText}
+              onChange={(e) => setSoloText(e.target.value)}
+              placeholder="Можно писать как получится…"
+              maxLength={1000}
+            />
+          </div>
+          <button
+            className="tiny-cta"
+            disabled={busy || !soloText.trim()}
+            onClick={() => saveAnswer('solo')}
+            style={{ alignSelf: 'flex-start' }}
+          >
+            Сохранить →
+          </button>
+        </section>
+      )}
+
+      {data.hasCouple && data.coupleQuestion && (
+        <section className="section card tinted stack">
+          <div className="eyebrow">вопрос для пары</div>
+          <p className="question">{data.coupleQuestion.question.text}</p>
+          {!data.coupleQuestion.revealed && (
+            <>
+              {data.coupleQuestion.myAnswer ? (
+                <div className="bubble">
+                  <b>Ваш ответ сохранён</b>
+                  <br />
+                  <span className="copy" style={{ margin: 0 }}>
+                    {data.coupleQuestion.waitingForPartner
+                      ? 'Ждём ответ партнёра, чтобы открыть оба.'
+                      : data.coupleQuestion.myAnswer.text}
+                  </span>
                 </div>
-                <button
-                  className="btn"
-                  disabled={busy || !coupleText.trim()}
-                  onClick={() => saveAnswer('couple')}
-                >
-                  Ответить
-                </button>
-                {data.coupleQuestion.waitingForPartner && (
-                  <p className="muted">Ответ откроется, когда партнёр тоже ответит.</p>
-                )}
-              </>
-            )}
-            {data.coupleQuestion.revealed && (
-              <div className="stack">
-                <div className="panel">
-                  <strong>Вы</strong>
-                  <p className="muted" style={{ margin: '6px 0 0' }}>
-                    {data.coupleQuestion.myAnswer?.text}
-                  </p>
-                </div>
-                <div className="panel">
-                  <strong>{data.coupleQuestion.partnerAnswer?.displayName}</strong>
-                  <p className="muted" style={{ margin: '6px 0 0' }}>
-                    {data.coupleQuestion.partnerAnswer?.text}
-                  </p>
-                </div>
+              ) : (
+                <>
+                  <div className="field">
+                    <textarea
+                      rows={3}
+                      value={coupleText}
+                      onChange={(e) => setCoupleText(e.target.value)}
+                      placeholder="Ваш ответ — партнёр увидит после взаимности"
+                      maxLength={1000}
+                    />
+                  </div>
+                  <button
+                    className="tiny-cta"
+                    disabled={busy || !coupleText.trim()}
+                    onClick={() => saveAnswer('couple')}
+                    style={{ alignSelf: 'flex-start' }}
+                  >
+                    Ответить →
+                  </button>
+                </>
+              )}
+            </>
+          )}
+          {data.coupleQuestion.revealed && (
+            <div className="stack">
+              <div className="bubble">
+                <b>Вы</b>
+                <br />
+                {data.coupleQuestion.myAnswer?.text}
               </div>
-            )}
-          </section>
-        )}
-
-        {!data.hasCouple && (
-          <section className="section panel stack">
-            <h2 className="h2">Пригласите партнёра</h2>
-            <p className="muted" style={{ margin: 0 }}>
-              Совместные вопросы, заметки и тесты откроются после соединения.
-            </p>
-            <Link className="btn btn-block text-center no-underline" href="/profile">
-              Перейти к приглашению
-            </Link>
-          </section>
-        )}
-
-        {data.hasCouple && (
-          <section className="section stack">
-            <h2 className="h2">Настроение и мысли</h2>
-            {data.partnerMood && (
-              <div className="panel">
-                <strong>От партнёра: {MOOD_LABELS[data.partnerMood.mood]}</strong>
-                {data.partnerMood.note && (
-                  <p className="muted" style={{ margin: '6px 0 0' }}>
-                    {data.partnerMood.note}
-                  </p>
-                )}
+              <div className="bubble user" style={{ marginLeft: 0, alignSelf: 'stretch' }}>
+                <b>{data.coupleQuestion.partnerAnswer?.displayName}</b>
+                <br />
+                {data.coupleQuestion.partnerAnswer?.text}
               </div>
-            )}
-            <div className="chip-grid">
-              {(Object.keys(MOOD_LABELS) as MoodType[]).map((key) => (
-                <button
-                  key={key}
-                  className={`chip ${mood === key ? 'active' : ''}`}
-                  onClick={() => {
-                    setMood(key);
-                    haptic('selection');
-                  }}
-                >
-                  {MOOD_LABELS[key]}
-                </button>
-              ))}
             </div>
-            <div className="field">
-              <textarea
-                rows={2}
-                value={moodNote}
-                onChange={(e) => setMoodNote(e.target.value)}
-                placeholder="Короткая заметка партнёру (по желанию)"
-                maxLength={500}
-              />
-            </div>
-            <button className="btn" disabled={!mood || busy} onClick={sendMood}>
-              Отправить партнёру
-            </button>
-          </section>
-        )}
+          )}
+        </section>
+      )}
 
+      {!data.hasCouple && (
+        <section className="section card tinted">
+          <b style={{ fontSize: 13 }}>Хотите позвать близкого?</b>
+          <p className="copy" style={{ margin: '4px 0' }}>
+            Некоторые вопросы можно проходить вдвоём.
+          </p>
+          <Link className="tiny-cta" href="/profile">
+            Пригласить партнёра
+          </Link>
+        </section>
+      )}
+
+      {data.hasCouple && (
         <section className="section stack">
-          <h2 className="h2">Тесты</h2>
-          {data.testInvites?.length ? (
-            data.testInvites.map((t) => (
-              <Link
-                key={t.sessionId}
-                className="list-item"
-                href={`/tests/session?id=${t.sessionId}`}
+          <div className="label">настроение для партнёра</div>
+          {data.partnerMood && (
+            <div className="card">
+              <strong>От партнёра: {MOOD_LABELS[data.partnerMood.mood]}</strong>
+              {data.partnerMood.note && (
+                <p className="muted" style={{ margin: '6px 0 0' }}>
+                  {data.partnerMood.note}
+                </p>
+              )}
+            </div>
+          )}
+          <div className="moods">
+            {(Object.keys(MOOD_LABELS) as MoodType[]).map((key) => (
+              <button
+                key={key}
+                className={`mood ${mood === key ? 'on' : ''}`}
+                onClick={() => {
+                  setMood(key);
+                  haptic('selection');
+                }}
+                title={MOOD_LABELS[key]}
               >
-                <strong>{t.test.title}</strong>
-                <small>
+                {MOOD_LABELS[key]}
+              </button>
+            ))}
+          </div>
+          <div className="field">
+            <textarea
+              rows={2}
+              value={moodNote}
+              onChange={(e) => setMoodNote(e.target.value)}
+              placeholder="Если хочется — добавьте пару слов"
+              maxLength={500}
+            />
+          </div>
+          <button className="btn" disabled={!mood || busy} onClick={sendMood}>
+            Отправить партнёру
+          </button>
+        </section>
+      )}
+
+      <section className="section card">
+        <b style={{ fontSize: 13 }}>Маленькая практика</b>
+        {data.testInvites?.length ? (
+          data.testInvites.map((t) => (
+            <Link
+              key={t.sessionId}
+              className="row"
+              href={`/tests/session?id=${t.sessionId}`}
+              style={{
+                marginTop: 10,
+                paddingTop: 10,
+                borderTop: '1px solid var(--line)',
+                textDecoration: 'none',
+                color: 'inherit',
+                fontSize: 12,
+              }}
+            >
+              <span
+                style={{
+                  width: 29,
+                  height: 29,
+                  borderRadius: 10,
+                  background: 'var(--lilac)',
+                  display: 'grid',
+                  placeItems: 'center',
+                }}
+              >
+                ✦
+              </span>
+              <span style={{ flex: 1 }}>
+                {t.test.title}
+                <br />
+                <small style={{ color: 'var(--ink-soft)' }}>
                   {t.status === 'completed'
                     ? 'Результат готов'
                     : t.myStatus === 'done'
                       ? 'Ждём партнёра'
                       : 'Продолжить'}
                 </small>
-              </Link>
-            ))
-          ) : (
-            <Link className="list-item" href="/tests">
-              <strong>Пройти тест</strong>
-              <small>Личные и совместные — без оценок и диагнозов</small>
+              </span>
+              <b>→</b>
             </Link>
-          )}
-        </section>
-      </div>
+          ))
+        ) : (
+          <Link
+            className="row"
+            href="/tests"
+            style={{
+              marginTop: 10,
+              paddingTop: 10,
+              borderTop: '1px solid var(--line)',
+              textDecoration: 'none',
+              color: 'inherit',
+              fontSize: 12,
+            }}
+          >
+            <span
+              style={{
+                width: 29,
+                height: 29,
+                borderRadius: 10,
+                background: 'var(--lilac)',
+                display: 'grid',
+                placeItems: 'center',
+              }}
+            >
+              ✦
+            </span>
+            <span style={{ flex: 1 }}>
+              Пройти тест
+              <br />
+              <small style={{ color: 'var(--ink-soft)' }}>без оценок и диагнозов</small>
+            </span>
+            <b>→</b>
+          </Link>
+        )}
+      </section>
     </Screen>
   );
 }

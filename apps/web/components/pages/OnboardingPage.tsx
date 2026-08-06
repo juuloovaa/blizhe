@@ -5,7 +5,6 @@ import { api } from '@/lib/api';
 import { toastError, toastSuccess } from '@/lib/toast';
 import type { Me } from '@/lib/types';
 import { haptic } from '@/lib/telegram';
-import { Doodles } from '@/components/Doodles';
 import { Screen } from '@/components/Screen';
 import { useAuth } from '@/state/AuthContext';
 
@@ -39,81 +38,96 @@ export function OnboardingPage() {
     }
   }
 
+  if (step === 1) {
+    return (
+      <Screen gradient>
+        <div className="brand">
+          <small>привет, это</small>
+          ближе
+        </div>
+        <p className="h-lg" style={{ marginTop: 14 }}>
+          Можно без спешки
+          <br />и без правильных
+          <br />
+          ответов.
+        </p>
+        <div className="section stack">
+          <button
+            type="button"
+            className={`choice ${mode === 'solo' ? 'selected' : ''}`}
+            onClick={() => {
+              setMode('solo');
+              haptic('selection');
+            }}
+          >
+            Я один / одна
+            <small>хочу чуть лучше слышать себя</small>
+          </button>
+          <button
+            type="button"
+            className={`choice ${mode === 'couple' ? 'selected' : ''}`}
+            onClick={() => {
+              setMode('couple');
+              haptic('selection');
+            }}
+          >
+            Я в паре
+            <small>хочу бережнее быть вместе</small>
+          </button>
+        </div>
+        <div className="section" style={{ marginTop: 'auto', paddingTop: 24 }}>
+          <button type="button" className="btn btn-block" onClick={() => setStep(2)}>
+            Дальше
+          </button>
+        </div>
+      </Screen>
+    );
+  }
+
   return (
     <Screen>
-      <Doodles scene="onboarding" />
-      <div className="relative z-[1]">
-        <p className="eyebrow">привет, это</p>
-        <h1 className="brand">
-          Бли<span>же</span>
-        </h1>
-        <p className="lead-hand">можно без спешки и без правильных ответов</p>
-
-        {step === 1 ? (
-          <div className="section stack">
-            <h2 className="h2">Как вы здесь?</h2>
-            <p className="soft-note">выберите то, что ближе сейчас — потом можно поменять</p>
-            <button
-              type="button"
-              className={`choice ${mode === 'solo' ? 'selected' : ''}`}
-              onClick={() => {
-                setMode('solo');
-                haptic('selection');
-              }}
-            >
-              <strong>Я один / одна</strong>
-              <span className="muted">Для себя: мысли, тесты и тёплый помощник</span>
-            </button>
-            <button
-              type="button"
-              className={`choice ${mode === 'couple' ? 'selected' : ''}`}
-              onClick={() => {
-                setMode('couple');
-                haptic('selection');
-              }}
-            >
-              <strong>Я в паре</strong>
-              <span className="muted">Можно пригласить партнёра по ссылке</span>
-            </button>
-            <button type="button" className="btn btn-block" onClick={() => setStep(2)}>
-              Дальше
-            </button>
-          </div>
-        ) : (
-          <div className="section stack">
-            <h2 className="h2">Как к вам обращаться?</h2>
-            <p className="soft-note">как в тёплом чатике, без анкеты</p>
-            <div className="field">
-              <label>имя</label>
-              <input
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                maxLength={64}
-                placeholder="Как вас зовут?"
-              />
-            </div>
-            <div className="field">
-              <label>местоимения — по желанию</label>
-              <input
-                value={pronouns}
-                onChange={(e) => setPronouns(e.target.value)}
-                maxLength={32}
-                placeholder="она / он / они"
-              />
-            </div>
-            <button type="button" className="btn btn-ghost btn-block" onClick={() => setStep(1)}>
-              Назад
-            </button>
-            <button
-              type="button"
-              className="btn btn-block"
-              disabled={saving}
-              onClick={() => void finish()}
-            >
-              {saving ? 'Секунду…' : 'Поехали'}
-            </button>
-          </div>
-        )}
+      <p className="eyebrow">шаг 2 из 2</p>
+      <p className="h-lg">
+        Как к вам
+        <br />
+        обращаться?
+      </p>
+      <p className="copy">Это можно изменить в любой момент.</p>
+      <div className="section stack">
+        <div className="field">
+          <label>имя</label>
+          <input
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            maxLength={64}
+            placeholder="Как вас зовут?"
+          />
+        </div>
+        <div className="field">
+          <label>
+            местоимения <span style={{ textTransform: 'none', letterSpacing: 0, fontWeight: 500 }}>(опционально)</span>
+          </label>
+          <input
+            value={pronouns}
+            onChange={(e) => setPronouns(e.target.value)}
+            maxLength={32}
+            placeholder="она / он / они"
+          />
+        </div>
+      </div>
+      <div className="section row" style={{ marginTop: 24 }}>
+        <button type="button" className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setStep(1)}>
+          Назад
+        </button>
+        <button
+          type="button"
+          className="btn"
+          style={{ flex: 1 }}
+          disabled={saving}
+          onClick={() => void finish()}
+        >
+          {saving ? 'Секунду…' : 'Поехали'}
+        </button>
       </div>
     </Screen>
   );

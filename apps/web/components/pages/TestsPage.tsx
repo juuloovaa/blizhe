@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { toastError } from '@/lib/toast';
 import { haptic } from '@/lib/telegram';
-import { Doodles } from '@/components/Doodles';
 import { Screen } from '@/components/Screen';
 
 type TestItem = {
@@ -28,6 +27,7 @@ const TYPE_LABEL: Record<string, string> = {
 export function TestsPage() {
   const [tests, setTests] = useState<TestItem[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
+  const [tab, setTab] = useState<'personal' | 'couple' | 'game'>('personal');
   const router = useRouter();
 
   useEffect(() => {
@@ -52,41 +52,61 @@ export function TestsPage() {
     }
   }
 
-  const groups = {
-    personal: tests.filter((t) => t.type === 'personal'),
-    couple: tests.filter((t) => t.type === 'couple'),
-    game: tests.filter((t) => t.type === 'game'),
-  };
+  const visible = tests.filter((t) => t.type === tab);
 
   return (
-    <Screen>
-      <Doodles scene="default" />
-      <div className="relative z-[1]">
-        <p className="eyebrow">тесты</p>
-        <h1 className="h2">Узнать себя и друг друга</h1>
-        <p className="lead-hand">без диагнозов и ярлыков — просто повод поговорить</p>
+    <Screen gradient>
+      <p className="h-lg">
+        Немного
+        <br />
+        понять себя
+      </p>
 
+      <div className="tabs section">
         {(['personal', 'couple', 'game'] as const).map((type) => (
-          <section key={type} className="section stack">
-            <h2 className="h2">{TYPE_LABEL[type]}</h2>
-            {groups[type].map((t) => (
-              <div key={t.id} className="list-item" style={{ cursor: 'default' }}>
-                <strong>{t.title}</strong>
-                <small>
-                  {t.description} · {t._count.questions} вопросов
-                </small>
-                <div className="row" style={{ marginTop: 10 }}>
-                  <button className="btn" disabled={busy === t.slug} onClick={() => start(t.slug)}>
-                    {busy === t.slug ? 'Стартуем…' : 'Начать'}
-                  </button>
-                  <Link className="btn btn-ghost" href={`/tests/intro/${t.slug}`}>
-                    Подробнее
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </section>
+          <button
+            key={type}
+            className={tab === type ? 'on' : ''}
+            onClick={() => setTab(type)}
+          >
+            {TYPE_LABEL[type]}
+          </button>
         ))}
+      </div>
+
+      <div className="section stack">
+        {visible.map((t) => (
+          <div key={t.id} className="test-card">
+            <h4 style={{ fontSize: 17, lineHeight: 1, margin: '0 0 5px', letterSpacing: '-0.04em' }}>
+              {t.title}
+            </h4>
+            <p>{t.description}</p>
+            <footer
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                fontSize: 10,
+                color: 'var(--ink-soft)',
+              }}
+            >
+              <span>{t._count.questions} вопросов</span>
+              <span style={{ display: 'flex', gap: 10 }}>
+                <Link className="tiny-cta" href={`/tests/intro/${t.slug}`}>
+                  Подробнее
+                </Link>
+                <button
+                  className="tiny-cta"
+                  disabled={busy === t.slug}
+                  onClick={() => start(t.slug)}
+                >
+                  {busy === t.slug ? '…' : 'Начать →'}
+                </button>
+              </span>
+            </footer>
+          </div>
+        ))}
+        {visible.length === 0 && <div className="empty">Пока пусто в этой группе.</div>}
       </div>
     </Screen>
   );

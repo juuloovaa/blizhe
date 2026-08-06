@@ -2,9 +2,8 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, type ReactNode } from 'react';
-import { motion } from 'framer-motion';
 import { BottomNav } from '@/components/BottomNav';
-import { Doodles } from '@/components/Doodles';
+import { Mascot } from '@/components/Mascot';
 import { InviteConfirmPage } from '@/components/pages/InviteConfirmPage';
 import { OnboardingPage } from '@/components/pages/OnboardingPage';
 import { useAuth } from '@/state/AuthContext';
@@ -26,19 +25,13 @@ export function AppGate({ children }: { children: ReactNode }) {
   if (loading) {
     return (
       <div className="loading-screen">
-        <Doodles scene="onboarding" />
         <div className="relative z-[1]">
-          <motion.div
-            className="mascot mx-auto mb-4"
-            animate={{ scale: [1, 1.05, 1], rotate: [-2, 2, -2] }}
-            transition={{ duration: 4.8, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            б
-          </motion.div>
-          <h1 className="brand">
-            Бли<span>же</span>
-          </h1>
-          <p className="lead-hand">сейчас будет тепло…</p>
+          <div className="loading-circle" />
+          <h1 className="brand">ближе</h1>
+          <p className="copy">место, где можно быть собой</p>
+          <p className="eyebrow bottom" style={{ marginTop: 28 }}>
+            загружаем немного тепла
+          </p>
         </div>
       </div>
     );
@@ -46,16 +39,23 @@ export function AppGate({ children }: { children: ReactNode }) {
 
   if (error || !me) {
     return (
-      <div className="loading-screen">
-        <Doodles scene="default" />
-        <div className="relative z-[1] max-w-[360px]">
-          <h1 className="brand">
-            Бли<span>же</span>
-          </h1>
-          <div className="section rounded-[18px] border-2 border-dashed border-danger/35 bg-danger-soft px-3.5 py-3 text-[0.92rem] text-danger">
-            упс — {error || 'Не удалось авторизоваться'}
+      <div className="loading-screen" style={{ background: 'var(--cream)' }}>
+        <div className="relative z-[1] mx-auto max-w-[340px] text-center">
+          <Mascot className="mb-3" />
+          <h1 className="brand">ближе</h1>
+          <div className="card tinted mt-4 text-left">
+            <h2 className="h-md">Кажется, мы потерялись</h2>
+            <p className="copy" style={{ marginTop: 8 }}>
+              {error || 'Откройте «Ближе» через бота — так мы поймём, кто вы.'}
+            </p>
           </div>
-          <p className="lead-hand">откройте приложение через бота — так спокойнее</p>
+          <a
+            className="btn btn-block dark bottom"
+            style={{ marginTop: 16, display: 'flex' }}
+            href="https://t.me/blizhee_bot"
+          >
+            Открыть бота
+          </a>
         </div>
       </div>
     );
