@@ -12,7 +12,7 @@ function run(command, args) {
   }
 }
 
-console.log('[blizhe-build] version=0.2.0 starting vercel build');
+console.log('[blizhe-build] version=0.3.0 starting vercel build');
 run('npm', ['run', 'prisma:generate', '--workspace=@blizhe/api']);
 run('npm', ['run', 'build', '--workspace=@blizhe/api']);
 run('npm', ['run', 'build', '--workspace=@blizhe/web']);

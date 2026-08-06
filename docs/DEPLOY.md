@@ -2,9 +2,12 @@
 
 ## Что уже настроено в коде
 
-- Фронт: Vite → `apps/web/dist`
+- Фронт: Next.js (static export) → `apps/web/out`
+- UI: Tailwind CSS, lucide-react, sonner, framer-motion
 - API: NestJS как serverless функция `/api/*`
 - Бот: на Vercel без polling, через webhook `/api/bot/webhook`
+
+Опционально на фронте: `NEXT_PUBLIC_API_URL` (по умолчанию `/api`).
 
 ## Нужные переменные в Vercel
 

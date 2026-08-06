@@ -10,7 +10,7 @@ MVP-приложение для отношений, эмоциональной �
 
 ## Стек
 
-- Frontend: React + TypeScript + Vite (Telegram Mini App)
+- Frontend: Next.js (App Router) + Tailwind CSS + lucide-react + sonner + framer-motion
 - Backend: NestJS + Prisma + PostgreSQL
 - Bot: grammY (кнопка Web App, deep links, уведомления)
 - Auth: проверка подписи Telegram `initData` на сервере
@@ -48,6 +48,13 @@ npm run dev:api
 npm run dev:web
 ```
 
+Локально фронт на `http://localhost:5173`. Чтобы API ходил в Nest, в корневом `.env` или `apps/web/.env.local`:
+
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
+```
+
+Откройте Mini App через бота или в браузере с `?devUser=1001:Анна` (при `ALLOW_DEV_AUTH=true`).
 - API: http://localhost:3000
 - Web: http://localhost:5173?devUser=1001:Анна
 

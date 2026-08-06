@@ -8,7 +8,8 @@ coverage
 .vite
 apps/api/prisma/*.db
 apps/web/dist
-.tools
+apps/web/out
+apps/web/.next
 .tools
 
 *.tsbuildinfo
